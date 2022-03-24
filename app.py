@@ -5,26 +5,24 @@ import board
 import lib
 import time
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 from adafruit_rgb_display.rgb import color565
-from adafruit_debouncer import Debouncer
 
 # Create the ST7789 display:
 disp = lib.getDisp()
 
 # Create blank image for drawing.
 # Make sure to create image with mode 'RGB' for full color.
-height = disp.width  # we swap height/width to rotate it to landscape!
-width = disp.height
-image = Image.new("RGB", (width, height))
+image = Image.new("RGB", (disp.width, disp.height))
 rotation = 180
 
 # Get drawing object to draw on image.
 draw = ImageDraw.Draw(image)
 
 # Draw a black filled box to clear the image.
-draw.rectangle((0, 0, width, height), outline=0, fill=(0, 0, 0))
+draw.rectangle((0, 0, disp.width, disp.height), outline=0, fill=(0, 0, 0))
 disp.image(image, rotation)
+font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 24)
 
 backlight = digitalio.DigitalInOut(board.D22)
 backlight.switch_to_output()
@@ -40,10 +38,11 @@ while True:
     
     if buttonA.fell or buttonA.rose or buttonB.fell or buttonB.rose:
         if buttonA.value and buttonB.value:
-            backlight.value = False  # turn off backlight
+            draw.rectangle((0, 0, disp.width, disp.height), outline=0, fill=0)
+            draw.text((0,-2), "kekse", font=font, fill="#FFFFFF")
+            disp.image(image, rotation)
             print("off")
         else:
-            backlight.value = True  # turn on backlight
             print("on")
         if buttonB.value and not buttonA.value:  # just button A pressed
             disp.fill(color565(255, 0, 0))  # red
